@@ -1,0 +1,23 @@
+openapi: 3.0.0
+
+paths:
+  /buckets:
+    get:
+      summary: this endpoint returns all buckets in your account
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListMyBuckets.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST" #never changes
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+
+    post:
+      summary: this endpoint returns all buckets in your account
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateBucket.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST" #never changes
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"

@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+# SAM = Serverless Application Model
+
+Resources:
+  UPBAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Name: upb-api
+      Description: "This is a description for API"
+      DefinitionBody:
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: swaggerFile.yaml
+      
+  ListMyBuckets:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: list-my-buckets
+      Handler: app.list_buckets
+      Runtime: python3.7
+      CodeUri: build
+      Events:
+        ListBuckets:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UPBAPI
+            Path: "/buckets"
+            Method: GET
+      Policies:
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:ListAllMyBuckets
+              Resource: '*'
+
+  CreateBucket:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: create-bucket
+      Handler: app.create_bucket
+      Runtime: python3.7
+      CodeUri: build
+      Events:
+        CreateBucket:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UPBAPI
+            Path: "/buckets"
+            Method: POST
+      Policies:
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:CreateBucket
+              Resource: 'arn:aws:s3:::upb-*'

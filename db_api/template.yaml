@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+# SAM = Serverless Application Model
+
+Resources:
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "pk"
+          AttributeType: "S"
+        - 
+          AttributeName: "sk"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "pk"
+          KeyType: "HASH"
+        - 
+          AttributeName: "sk"
+          KeyType: "RANGE"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      TableName: "petStore"
+    
+  PetApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Name: pet-api
+      DefinitionBody:
+        'Fn::Transform':
+          Name: 'AWS::Include'
+          Parameters:
+            Location: swaggerFile.yaml
+      
+  Adopt:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: adopt
+      Handler: app.adopt
+      Runtime: python3.7
+      CodeUri: build
+      Events:
+        Adopt:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PetApi
+            Path: "/adopt"
+            Method: POST
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref Table
+
+  AdoptedByOwner:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: adopted_by_owner
+      Handler: app.adopted_by_owner
+      Runtime: python3.7
+      CodeUri: build
+      Events:
+        Adopt:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PetApi
+            Path: "/adopted/owner/{owner}"
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref Table
+
+  AdoptedByYear:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: adopted_by_year
+      Handler: app.adopted_by_year
+      Runtime: python3.7
+      CodeUri: build
+      Events:
+        Adopt:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PetApi
+            Path: "/adopted/owner/{owner}/year/{year}"
+            Method: GET
+      # Policies:
+      #   - Version: '2012-10-17' 
+      #     Statement:
+      #       - Effect: Allow
+      #         Action:
+      #           - s3:ListAllMyBuckets
+      #         Resource: '*'

@@ -1,0 +1,35 @@
+openapi: 3.0.0
+
+paths:
+  /adopt:
+    post:
+      summary: this endpoint saves information about adoption
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Adopt.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST" #never changes
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+
+  /adopted/owner/{owner}:
+    get:
+      summary: list pets adopted by owner
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AdoptedByOwner.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST" #never changes
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+
+  /adopted/owner/{owner}/year/{year}:
+    get:
+      summary: list pets adopted by owner in a given year by a specific employee
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AdoptedByYear.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST" #never changes
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"

@@ -9,32 +9,16 @@ Resources:
     Properties:
       FunctionName: upb-lambda
       Handler: app.lambda_handler
-      Runtime: python3.6
+      Runtime: python3.7
       CodeUri: build
-      Role: !GetAtt LambdaRole.Arn
-      
-
-  LambdaRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      RoleName: upb-lambda-role-2
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
+      # Role: !GetAtt LambdaRole.Arn
       Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "logs:CreateLogGroup"
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
-                Resource: '*'
+        - S3ReadPolicy:
+            BucketName: "robertodeployments"
+        - CloudWatchAgentAdminPolicy
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:ListAllMyBuckets
+              Resource: '*'
