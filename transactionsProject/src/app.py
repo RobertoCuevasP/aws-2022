@@ -50,8 +50,8 @@ def transaction(event, context):
     #Insertar transaccion en la tabla
     table.put_item(
        Item={
-            'pk': 'transaction_'+ sender_name,
-            'sk': receiver_name + datetime.datetime.today(), 
+            'pk': f'transaction_{sender_name}'
+            'sk': f'{receiver_name}#{datetime.datetime.today()}', 
             'amount': amount,
             'anomaly': anomaly
         }
@@ -102,6 +102,7 @@ def get_users(event, context):
     response = table.query(
         KeyConditionExpression=Key('pk').eq('user')
     )
+    print(response)
     return {
         'statusCode': 200,
         'body': json.dumps(response)

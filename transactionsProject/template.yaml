@@ -44,10 +44,10 @@ Resources:
       Runtime: python3.7
       CodeUri: build
       Events:
-        Adopt:
+        Transaction:
           Type: Api
           Properties:
-            RestApiId: !Ref PetApi
+            RestApiId: !Ref BankApi
             Path: "/transaction"
             Method: POST
       Policies:
@@ -62,10 +62,10 @@ Resources:
       Runtime: python3.7
       CodeUri: build
       Events:
-        Adopt:
+        Transaction:
           Type: Api
           Properties:
-            RestApiId: !Ref PetApi
+            RestApiId: !Ref BankApi
             Path: "/users"
             Method: GET
       Policies:
@@ -80,10 +80,10 @@ Resources:
       Runtime: python3.7
       CodeUri: build
       Events:
-        Adopt:
+        Transaction:
           Type: Api
           Properties:
-            RestApiId: !Ref PetApi
+            RestApiId: !Ref BankApi
             Path: "/transactions/{user}"
             Method: GET
       Policies:
