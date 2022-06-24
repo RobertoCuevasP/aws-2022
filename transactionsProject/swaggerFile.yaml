@@ -1,34 +1,34 @@
 openapi: 3.0.0
 
 paths:
-  /adopt:
+  /transaction:
     post:
-      summary: this endpoint saves information about adoption
+      summary: this endpoint saves information about a new transaction
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Adopt.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Transaction.Arn}/invocations
         passthroughBehavior: "when_no_match"
         httpMethod: "POST" #never changes
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
 
-  /adopted/owner/{owner}:
+  /users:
     get:
-      summary: list pets adopted by owner
+      summary: list users that have an account
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AdoptedByOwner.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetUsers.Arn}/invocations
         passthroughBehavior: "when_no_match"
         httpMethod: "POST" #never changes
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
 
-  /adopted/owner/{owner}/year/{year}:
+  /transactions/{user}:
     get:
-      summary: list pets adopted by owner in a given year by a specific employee
+      summary: list transactions made by one user
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AdoptedByYear.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTransactionsFromUser.Arn}/invocations
         passthroughBehavior: "when_no_match"
         httpMethod: "POST" #never changes
         contentHandling: "CONVERT_TO_TEXT"

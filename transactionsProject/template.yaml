@@ -23,24 +23,24 @@ Resources:
       ProvisionedThroughput: 
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
-      TableName: "petStore"
+      TableName: "bankTransactions"
     
-  PetApi:
+  BankApi:
     Type: AWS::Serverless::Api
     Properties:
       StageName: prod
-      Name: pet-api
+      Name: bank-api
       DefinitionBody:
         'Fn::Transform':
           Name: 'AWS::Include'
           Parameters:
             Location: swaggerFile.yaml
       
-  Adopt:
+  Transaction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: adopt
-      Handler: app.adopt
+      FunctionName: transaction
+      Handler: app.transaction
       Runtime: python3.7
       CodeUri: build
       Events:
@@ -48,17 +48,17 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref PetApi
-            Path: "/adopt"
+            Path: "/transaction"
             Method: POST
       Policies:
         - DynamoDBWritePolicy:
             TableName: !Ref Table
 
-  AdoptedByOwner:
+  GetUsers:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: adopted_by_owner
-      Handler: app.adopted_by_owner
+      FunctionName: get_users
+      Handler: app.get_users
       Runtime: python3.7
       CodeUri: build
       Events:
@@ -66,17 +66,17 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref PetApi
-            Path: "/adopted/owner/{owner}"
+            Path: "/users"
             Method: GET
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref Table
 
-  AdoptedByYear:
+  GetTransactionsFromUser:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: adopted_by_year
-      Handler: app.adopted_by_year
+      FunctionName: get_transactions_from_user
+      Handler: app.get_transactions_from_user
       Runtime: python3.7
       CodeUri: build
       Events:
@@ -84,12 +84,8 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref PetApi
-            Path: "/adopted/owner/{owner}/year/{year}"
+            Path: "/transactions/{user}"
             Method: GET
-      # Policies:
-      #   - Version: '2012-10-17' 
-      #     Statement:
-      #       - Effect: Allow
-      #         Action:
-      #           - s3:ListAllMyBuckets
-      #         Resource: '*'
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref Table
