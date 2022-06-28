@@ -27,8 +27,31 @@ def transaction(event, context):
         }
     )
     receiver = response2["Item"]
+    #Insertar transaccion en la tabla
+    time = datetime.datetime.now()
+    day = str(datetime.date.today())
+    transaction_name = 'transaction_' + sender_name
+    
     #Verificacion de anomalias
+    #Datos para anomalia 2
+    #transactionsSender = table.query(
+    #    KeyConditionExpression='pk = :pk AND begins_with ( sk , :sk )',
+    #    ExpressionAttributeValues={
+    #        ':pk': {'S': f'transaction_{sender_name}'},
+    #        ':sk': {'S': {day} }
+    #    }
+    #)
+    
+    transactionsSender = table.query(
+        KeyConditionExpression = Key('pk').eq(transaction_name) & Key('sk').begins_with(day)
+    )
+    
+    print(transactionsSender['Items'])
+    print(len(transactionsSender['Items']))
+    
+    #Datos para anomalia 3
     result_amount_sender = int(sender['saldo_total']) - amount
+    
     message = "Transaction successful"
     if result_amount_sender < 0:
         anomaly = "4"
@@ -39,7 +62,7 @@ def transaction(event, context):
         #Escribir el mensaje de la anomalia
         message = "La persona que recibe (envia) gana menos de $2000"
     #Anomalia 2
-    elif int(sender['nro_transacciones_dia']) >= 5:
+    elif len(transactionsSender['Items']) >= 5:
         anomaly = "2"
         #Escribir mensaje
         message = "El user ya realizo mas de 5 transacciones en el dia"
@@ -49,14 +72,11 @@ def transaction(event, context):
         #Escribir mensaje
         message = "A su saldo le quedaria menos de 100 dolares"
 
-    #Insertar transaccion en la tabla
-    time = datetime.datetime.now()
-    #new_date = time.replace(" ", "_")
     table.put_item(
        Item={
             'pk': f'transaction_{sender_name}',
-            'sk': f'{receiver_name}#{time}', 
-            'amount': amount,
+            'sk': f'{time}#{receiver_name}', 
+            'amount': str(amount),
             'anomaly': anomaly
         }
     )
@@ -68,16 +88,14 @@ def transaction(event, context):
         final_amount_receiver = str(result_amount_receiver)
         final_amount_sender = str(result_amount_sender)
         #Sender
-        nts = int(sender['nro_transacciones_dia']) + 1
         table.update_item(
             Key={
                 'pk': 'user',
                 'sk': sender_name
             },
-            UpdateExpression='SET saldo_total = :sal, nro_transacciones_dia = :n',
+            UpdateExpression='SET saldo_total = :sal',
             ExpressionAttributeValues={
-                ':sal': final_amount_sender,
-                ':n' : str(nts)
+                ':sal': final_amount_sender
             }
         )
         #Receiver
@@ -94,11 +112,19 @@ def transaction(event, context):
         
         return {
             'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
             'body': json.dumps(message)
         }
     else: 
         return {
             'statusCode': 401,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
             'body': json.dumps(message)
         }
 
@@ -111,6 +137,25 @@ def get_users(event, context):
     #print(response)
     return {
         'statusCode': 200,
+        'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+        'body': json.dumps(response["Items"])
+    }
+    
+def get_transactions(event, context):
+    table = dynamodb.Table('bankTransactions')
+    response = table.scan(
+        FilterExpression=Attr('pk').begins_with("transaction")
+    )
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
         'body': json.dumps(response["Items"])
     }
 
@@ -124,5 +169,9 @@ def get_transactions_from_user(event, context):
     )
     return {
         'statusCode': 200,
+        'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
         'body': json.dumps(response["Items"])
     }

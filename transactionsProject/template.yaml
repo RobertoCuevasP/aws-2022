@@ -91,3 +91,21 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref Table
+            
+  GetTransactions:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: get_transactions
+      Handler: app.get_transactions
+      Runtime: python3.7
+      CodeUri: build
+      Events:
+        Transaction:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BankApi
+            Path: "/transactions"
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref Table

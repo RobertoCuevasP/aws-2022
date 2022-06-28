@@ -2,6 +2,43 @@ openapi: 3.0.0
 
 paths:
   /transaction:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods : "'*'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
     post:
       summary: this endpoint saves information about a new transaction
       x-amazon-apigateway-integration:
@@ -13,6 +50,43 @@ paths:
         type: "aws_proxy"
 
   /users:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods : "'*'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
     get:
       summary: list users that have an account
       x-amazon-apigateway-integration:
@@ -24,11 +98,96 @@ paths:
         type: "aws_proxy"
 
   /transactions/{user}:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods : "'*'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
     get:
       summary: list transactions made by one user
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTransactionsFromUser.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST" #never changes
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+        
+  /transactions:
+    options:
+      summary: CORS support
+      description: |
+        Enable CORS by returning correct headers
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - CORS
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          "default":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods : "'*'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            responseTemplates:
+              application/json: |
+                {}
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Headers:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Origin:
+              type: "string"
+    get:
+      summary: list all transactions
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTransactions.Arn}/invocations
         passthroughBehavior: "when_no_match"
         httpMethod: "POST" #never changes
         contentHandling: "CONVERT_TO_TEXT"
