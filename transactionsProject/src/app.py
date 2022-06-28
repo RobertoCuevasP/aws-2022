@@ -5,10 +5,13 @@ from boto3.dynamodb.conditions import Key, Attr
 dynamodb = boto3.resource('dynamodb')
 def transaction(event, context):
     body = json.loads(event["body"])
-    sender_name = body["sender"] # user_1
-    receiver_name = body["receiver"] #user_2
-    amount = int(body["amount"]) #10000$
+    #Datos de la transaccion
+    sender_name = body["sender"] 
+    receiver_name = body["receiver"]
+    amount = int(body["amount"]) 
     anomaly = "0"
+    
+    #Obtencion de los usuarios
     table = dynamodb.Table('bankTransactions')
     response = table.get_item(
         Key={
@@ -17,8 +20,6 @@ def transaction(event, context):
         }
     )
     sender = response["Item"]
-    #print(response)
-    #print(sender)
     
     response2 = table.get_item(
         Key={
@@ -27,51 +28,39 @@ def transaction(event, context):
         }
     )
     receiver = response2["Item"]
-    #Insertar transaccion en la tabla
     time = datetime.datetime.now()
     day = str(datetime.date.today())
-    transaction_name = 'transaction_' + sender_name
     
-    #Verificacion de anomalias
-    #Datos para anomalia 2
-    #transactionsSender = table.query(
-    #    KeyConditionExpression='pk = :pk AND begins_with ( sk , :sk )',
-    #    ExpressionAttributeValues={
-    #        ':pk': {'S': f'transaction_{sender_name}'},
-    #        ':sk': {'S': {day} }
-    #    }
-    #)
+    #Obtencion de transacciones realizadas por un usuario en la fecha (anomalia 2)
+    transaction_name = 'transaction_' + sender_name
     
     transactionsSender = table.query(
         KeyConditionExpression = Key('pk').eq(transaction_name) & Key('sk').begins_with(day)
     )
     
-    print(transactionsSender['Items'])
-    print(len(transactionsSender['Items']))
-    
-    #Datos para anomalia 3
+    #Calculo previo para verificar anomalia 3
     result_amount_sender = int(sender['saldo_total']) - amount
     
+    #Verificacion de anomalias
     message = "Transaction successful"
+    #Anomalia base
     if result_amount_sender < 0:
         anomaly = "4"
         message = "No tiene saldo suficiente"
     #Anomalia 1
     elif amount >= 20000 and int(receiver['ganancias_mes']) <= 2000:
         anomaly = "1"
-        #Escribir el mensaje de la anomalia
         message = "La persona que recibe (envia) gana menos de $2000"
     #Anomalia 2
     elif len(transactionsSender['Items']) >= 5:
         anomaly = "2"
-        #Escribir mensaje
         message = "El user ya realizo mas de 5 transacciones en el dia"
     #Anomalia 3
     elif amount >= 10000 and result_amount_sender <= 100:
         anomaly = "3"
-        #Escribir mensaje
         message = "A su saldo le quedaria menos de 100 dolares"
-
+    
+    #Insertar transaccion en la tabla
     table.put_item(
        Item={
             'pk': f'transaction_{sender_name}',
@@ -134,7 +123,6 @@ def get_users(event, context):
     response = table.query(
         KeyConditionExpression=Key('pk').eq("user")
     )
-    #print(response)
     return {
         'statusCode': 200,
         'headers': {
